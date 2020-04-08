@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: org1-pvc-claim
+  namespace: org1
+spec:
+  storageClassName: org1-volume
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

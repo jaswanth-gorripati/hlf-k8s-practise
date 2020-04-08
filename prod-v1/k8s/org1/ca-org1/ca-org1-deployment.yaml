@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ca-org1-deployment
+  labels: { component: ca, type: org1 }
+  namespace: org1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: ca
+      type: org1
+  template:
+    metadata:
+      labels:
+        component: ca
+        type: org1
+    spec:
+      volumes:
+        - name: host-mount
+          hostPath:
+            path: "/host"
+        - name: ca-start-script-volume
+          configMap:
+            name: ca-org1-start
+            defaultMode: 0744
+      containers:
+        - name: ca-org1
+          image: hyperledger/fabric-ca:1.4.3
+          resources:
+            limits:
+              cpu: "100m"
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /config
+              name: host-mount
+            - mountPath: /certs
+              name: host-mount
+            - mountPath: /scripts
+              name: ca-start-script-volume
+          env:
+            - name: FABRIC_CA_HOME
+              value: /etc/hyperledger/fabric-ca-server
+            - name: FABRIC_CA_SERVER_HOME
+              value: /etc/hyperledger/fabric-ca-server
+            - name: FABRIC_CA_SERVER_CA_NAME
+              value: ca-GRID
+            - name: FABRIC_CA_SERVER_TLS_ENABLED
+              value: "true"
+            - name: ROOT_ADMIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ca-org1-admin-creds
+                  key: ROOT_ADMIN_NAME
+            - name: ROOT_ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: ca-org1-admin-creds
+                  key: ROOT_ADMIN_PASS
+          command: ["sh"]
+          args: ["/scripts/start.sh"]
+          ports:
+            - containerPort: 7054
