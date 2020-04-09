@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ca-client-deployment
+  labels: { component: client, type: ca }
+  namespace: org1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: client
+      type: ca
+  template:
+    metadata:
+      labels:
+        component: client
+        type: ca
+    spec:
+      volumes:
+        - name: host-mount
+          hostPath:
+            path: "/host"
+        - name: ca-start-script-volume
+          configMap:
+            name: ca-org1-start
+            defaultMode: 0744
+      containers:
+        - name: ca-client
+          image: hyperledger/fabric-ca-tools:1.2.1
+          resources:
+            limits:
+              cpu: "100m"
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /certs
+              name: host-mount
+            - mountPath: /config
+              name: host-mount
+            - mountPath: /scripts
+              name: ca-start-script-volume
+          command: ["sleep"]
+          args: ["infinity"]
+          env:
+            - name: FABRIC_CA_SERVER_HOME
+              value: /etc/hyperledger/fabric-ca-client
+            - name: ROOT_HOST
+              value: ca-org1
+            - name: ROOT_PORT
+              value: "7054"
+            - name: ROOT_USERNAME
+              value: admin
+            - name: ROOT_PASSWORD
+              value: adminpw
+          # volumeMounts:
+          #   - mountPath: /scripts
+          #     name: host-mount
+          #     subPath: files/scripts
+          #   - mountPath: /state
+          #     name: host-mount
+          #     subPath: state
+          #   - mountPath: /files
+          #     name: host-mount
+          #     subPath: files
+          #   - mountPath: /etc/hyperledger/fabric-ca-server-root
+          #     name: host-mount
+          #     subPath: state/ca-root
+          #   - mountPath: /etc/hyperledger/fabric-ca-client
+          #     name: host-mount
+          #     subPath: state/ca-client

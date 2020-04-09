@@ -1,0 +1,42 @@
+/config
+    genesis.block
+    channel.tx
+    anchorpeermsp.tx
+    configtx.yaml
+/scripts ( all are config maps)
+    start-root.sh
+    gencerts.sh
+
+/certs
+    /org1
+        /ca
+            /msp
+                /cacerts
+                    ca-cert.pem
+                /keystore
+                    *_sk
+                /signcerts
+                /admincerts
+        /peers
+            /peer0.org1.svc.cluster.local
+                /msp
+                /tlscacert
+                /users
+            /peer1.org1.svc.cluster.local
+                /msp
+                /tlscacert
+                /users
+        /orderers
+            /orderer0.orderers.svc.cluster.local
+                /msp
+                /tlscacerts
+                /users
+/backups
+    /peers
+        /peer0.org1.svc.cluster.local
+        /peer0.org1.svc.cluster.local
+    /orderers/
+        /orderer0.orderers.svc.cluster.local
+    /ca
+    /couchdbs
+        /peero-couchdb0

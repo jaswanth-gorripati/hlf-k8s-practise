@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ca-org1-clusterip-service
+  name: ca-org1
   labels: { component: ca, type: org1 }
   namespace: org1
 spec:

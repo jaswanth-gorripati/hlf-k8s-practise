@@ -44,9 +44,9 @@ spec:
             - name: FABRIC_CA_SERVER_HOME
               value: /etc/hyperledger/fabric-ca-server
             - name: FABRIC_CA_SERVER_CA_NAME
-              value: ca-GRID
+              value: ca-org1
             - name: FABRIC_CA_SERVER_TLS_ENABLED
-              value: "true"
+              value: "false"
             - name: ROOT_ADMIN_NAME
               valueFrom:
                 secretKeyRef:
