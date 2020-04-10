@@ -1,0 +1,149 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ca-org1-configtx
+  namespace: org1
+  labels: { component: ca, type: org1 }
+data:
+  configtx.yaml: |-
+    Organizations:
+      - &orderer
+        Name: orderer
+        ID: orderer
+        MSPDir: /certs/ordererOrgs/default.svc.cluster.local/orderers/orderer0.default.svc.cluster.local/msp
+        Policies:
+          Readers:
+            Type: Signature
+            Rule: "OR('orderer.member')"
+          Writers:
+            Type: Signature
+            Rule: "OR('orderer.member')"
+          Admins:
+            Type: Signature
+            Rule: "OR('orderer.admin')"
+
+      - &org1
+        Name: org1
+        ID: org1
+        MSPDir: /certs/peerOrgs/org1/peers/org1-peer0.org1.svc.cluster.local/msp
+        Policies:
+          Readers:
+            Type: Signature
+            Rule: "OR('org1.admin', 'org1.peer', 'org1.client', 'org1.member')"
+          Writers:
+            Type: Signature
+            Rule: "OR('org1.admin', 'org1.peer', 'org1.client', 'org1.member')"
+          Admins:
+            Type: Signature
+            Rule: "OR('org1.admin')"
+        AnchorPeers:
+          - Host: peer0-org1-service
+            Port: 7051
+
+    Capabilities:
+      Channel: &ChannelCapabilities
+        V1_4_3: true
+
+      Orderer: &OrdererCapabilities
+        V1_4_2: true
+
+      Application: &ApplicationCapabilities
+        V1_4_2: true
+
+    Application: &ApplicationDefaults
+      Organizations:
+
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "ANY Admins"
+        BlockValidation:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+    Orderer: &OrdererDefaults
+
+      OrdererType: solo
+      Addresses:
+        - orderer0-default:7050
+      BatchTimeout: 1s
+      BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+      Kafka:
+        Brokers:
+          - 127.0.0.1:9092
+      
+      Organizations:
+      
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "MAJORITY Admins"
+        BlockValidation:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+
+    Channel: &ChannelDefaults
+
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "MAJORITY Admins"
+
+      Capabilities:
+        <<: *ChannelCapabilities
+
+    Profiles:
+
+      OrdererGenesis:
+        <<: *ChannelDefaults
+        Capabilities:
+          <<: *ChannelCapabilities
+        Orderer:
+          <<: *OrdererDefaults
+          Organizations:
+            - *orderer
+          Capabilities:
+            <<: *OrdererCapabilities
+        Application:
+          <<: *ApplicationDefaults
+          Organizations:
+            - <<: *orderer
+        Consortiums:
+          MAIN:
+            Organizations:
+              - *org1
+
+      MainChannel:
+        <<: *ChannelDefaults
+        Consortium: MAIN
+        Application:
+          <<: *ApplicationDefaults
+          Organizations:
+            - *org1
+          Capabilities:
+            <<: *ApplicationCapabilities

@@ -46,7 +46,7 @@ spec:
             - name: FABRIC_CA_SERVER_CA_NAME
               value: ca-org1
             - name: FABRIC_CA_SERVER_TLS_ENABLED
-              value: "false"
+              value: "true"
             - name: ROOT_ADMIN_NAME
               valueFrom:
                 secretKeyRef:

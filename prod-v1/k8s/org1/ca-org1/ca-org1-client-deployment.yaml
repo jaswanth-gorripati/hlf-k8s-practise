@@ -24,6 +24,9 @@ spec:
           configMap:
             name: ca-org1-start
             defaultMode: 0744
+        - name: ca-org1-configtx
+          configMap:
+            name: ca-org1-configtx
       containers:
         - name: ca-client
           image: hyperledger/fabric-ca-tools:1.2.1
@@ -38,11 +41,17 @@ spec:
               name: host-mount
             - mountPath: /scripts
               name: ca-start-script-volume
+            - mountPath: /configtx
+              name: ca-org1-configtx
           command: ["sleep"]
           args: ["infinity"]
           env:
             - name: FABRIC_CA_SERVER_HOME
               value: /etc/hyperledger/fabric-ca-client
+            - name: FABRIC_CA_CLIENT_TLS_CERTFILES
+              value: /certs/ca-org1/ca-cert.pem
+            - name: FABRIC_CA_CLIENT_HOME
+              value: /etc/hyperledger/tls-ca/admin
             - name: ROOT_HOST
               value: ca-org1
             - name: ROOT_PORT
@@ -51,19 +60,3 @@ spec:
               value: admin
             - name: ROOT_PASSWORD
               value: adminpw
-          # volumeMounts:
-          #   - mountPath: /scripts
-          #     name: host-mount
-          #     subPath: files/scripts
-          #   - mountPath: /state
-          #     name: host-mount
-          #     subPath: state
-          #   - mountPath: /files
-          #     name: host-mount
-          #     subPath: files
-          #   - mountPath: /etc/hyperledger/fabric-ca-server-root
-          #     name: host-mount
-          #     subPath: state/ca-root
-          #   - mountPath: /etc/hyperledger/fabric-ca-client
-          #     name: host-mount
-          #     subPath: state/ca-client

@@ -8,29 +8,45 @@
     gencerts.sh
 
 /certs
-    /org1
-        /ca
+    ordererOrgs/
+        /default.svc.cluster.local
+            /orderers
+                /orderer0.default.svc.cluster.local
+                    /msp
+                        /admincerts
+                        /cacerts
+                        /signcerts
+                        /tlscacert
+                        /users
+                    /tls
+                        ca.crt
+                        server.crt
+                        server.key
+    peerOrgs/
+        /org1
             /msp
-                /cacerts
-                    ca-cert.pem
-                /keystore
-                    *_sk
-                /signcerts
                 /admincerts
-        /peers
-            /peer0.org1.svc.cluster.local
-                /msp
+                /cacerts
+                /signcerts
                 /tlscacert
                 /users
-            /peer1.org1.svc.cluster.local
-                /msp
-                /tlscacert
-                /users
-        /orderers
-            /orderer0.orderers.svc.cluster.local
-                /msp
-                /tlscacerts
-                /users
+            /peers
+                /org1-peer0.org1.svc.cluster.local
+                    /msp
+                        /admincerts
+                        /cacerts
+                        /signcerts
+                        /tlscacert
+                        /users
+                    /tls
+                        ca.crt
+                        server.crt
+                        server.key
+            /users
+                /Admin@org1
+                /User1@org1
+                /rootAdmin
+
 /backups
     /peers
         /peer0.org1.svc.cluster.local
@@ -40,3 +56,21 @@
     /ca
     /couchdbs
         /peero-couchdb0
+
+
+
+
+ # - mountPath: /etc/hyperledger/fabric/users
+            #   name: host-mount
+            #   subPath: peerOrgs/org1/users
+
+
+
+peer channel create -o orderer0:7050 -c mychannel -f /var/hyperledger/orderer/data/channel.tx --tls --cafile /var/hyperledger/orderer/data/
+
+
+CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+
+
+export CORE_PEER_ADDRESS=peer0-org1:7051
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
