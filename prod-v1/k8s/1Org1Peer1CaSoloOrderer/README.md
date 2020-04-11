@@ -7,7 +7,7 @@
 Run below commands form home directory
 ```bash
 mkdir binaryTools && cd binaryTools
-curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.6
+curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.3
 ```
 
 ```bash
