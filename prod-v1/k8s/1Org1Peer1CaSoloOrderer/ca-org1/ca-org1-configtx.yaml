@@ -74,7 +74,7 @@ data:
 
       OrdererType: solo
       Addresses:
-        - orderer0-default:7050
+        - orderer0:7050
       BatchTimeout: 1s
       BatchSize:
         MaxMessageCount: 10
