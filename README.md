@@ -1,3 +1,8 @@
+> Pre-requirements
+1. install kubeadm 
+2. install kubectl
+3. install Docker
+
 # Start the cluster in KUBEADM
 
 > To start the clulster in kubeadm we need to use flannel cri
