@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: peer0-org2
+  labels: { component: peer, type: clusterip, org: org2 }
+  namespace: org2
+spec:
+  selector:
+    component: peer0
+    type: peer
+    org: org2
+  ports:
+    - port: 7051
+      name: peer
+      targetPort: 7051
+    - port: 7053
+      name: event
+      targetPort: 7053

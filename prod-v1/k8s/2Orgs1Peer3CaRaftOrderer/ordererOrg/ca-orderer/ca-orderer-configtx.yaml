@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ca-orderer-configtx
+  namespace: orderer
+  labels: { component: ca, type: configtx, org: orderer }
+data:
+  configtx.yaml: |-
+    Organizations:
+      - &orderer
+        Name: orderer
+        ID: orderer
+        MSPDir: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer0.orderer.svc.cluster.local/msp
+        Policies:
+          Readers:
+            Type: Signature
+            Rule: "OR('orderer.member')"
+          Writers:
+            Type: Signature
+            Rule: "OR('orderer.member')"
+          Admins:
+            Type: Signature
+            Rule: "OR('orderer.admin')"
+
+      - &org1
+        Name: org1
+        ID: org1
+        MSPDir: /certs/peerOrgs/org1/peers/org1-peer0.org1.svc.cluster.local/msp
+        Policies:
+          Readers:
+            Type: Signature
+            Rule: "OR('org1.admin', 'org1.peer', 'org1.client', 'org1.member')"
+          Writers:
+            Type: Signature
+            Rule: "OR('org1.admin', 'org1.peer', 'org1.client', 'org1.member')"
+          Admins:
+            Type: Signature
+            Rule: "OR('org1.admin')"
+        AnchorPeers:
+          - Host: peer0-org1.org1.svc.cluster.local
+            Port: 7051
+      - &org2
+        Name: org2
+        ID: org2
+        MSPDir: /certs/peerOrgs/org2/peers/org2-peer0.org2.svc.cluster.local/msp
+        Policies:
+          Readers:
+            Type: Signature
+            Rule: "OR('org2.admin', 'org2.peer', 'org2.client', 'org2.member')"
+          Writers:
+            Type: Signature
+            Rule: "OR('org2.admin', 'org2.peer', 'org2.client', 'org2.member')"
+          Admins:
+            Type: Signature
+            Rule: "OR('org2.admin')"
+        AnchorPeers:
+          - Host: peer0-org2.org2.svc.cluster.local
+            Port: 7051
+
+    Capabilities:
+      Channel: &ChannelCapabilities
+        V1_4_3: true
+
+      Orderer: &OrdererCapabilities
+        V1_4_2: true
+
+      Application: &ApplicationCapabilities
+        V1_4_2: true
+
+    Application: &ApplicationDefaults
+      Organizations:
+
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "ANY Admins"
+        BlockValidation:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+    Orderer: &OrdererDefaults
+
+      OrdererType: etcdraft
+      EtcdRaft:
+        Consenters:
+          - Host: orderer0
+            Port: 7050
+            ClientTLSCert: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer0.orderer.svc.cluster.local/tls/server.crt
+            ServerTLSCert: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer0.orderer.svc.cluster.local/tls/server.crt
+          - Host: orderer1
+            Port: 7050
+            ClientTLSCert: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer1.orderer.svc.cluster.local/tls/server.crt
+            ServerTLSCert: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer1.orderer.svc.cluster.local/tls/server.crt
+          - Host: orderer2
+            Port: 7050
+            ClientTLSCert: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer2.orderer.svc.cluster.local/tls/server.crt
+            ServerTLSCert: /certs/ordererOrgs/orderer.svc.cluster.local/orderers/orderer2.orderer.svc.cluster.local/tls/server.crt
+      Addresses:
+        - orderer0.orderer.svc.cluster.local:7050
+        - orderer1.orderer.svc.cluster.local:7050
+        - orderer2.orderer.svc.cluster.local:7050
+      BatchTimeout: 1s
+      BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+      Kafka:
+        Brokers:
+          - 127.0.0.1:9092
+      
+      Organizations:
+      
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "MAJORITY Admins"
+        BlockValidation:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+
+    Channel: &ChannelDefaults
+
+      Policies:
+        Readers:
+          Type: ImplicitMeta
+          Rule: "ANY Readers"
+        Writers:
+          Type: ImplicitMeta
+          Rule: "ANY Writers"
+        Admins:
+          Type: ImplicitMeta
+          Rule: "MAJORITY Admins"
+
+      Capabilities:
+        <<: *ChannelCapabilities
+
+    Profiles:
+
+      OrdererGenesis:
+        <<: *ChannelDefaults
+        Capabilities:
+          <<: *ChannelCapabilities
+        Orderer:
+          <<: *OrdererDefaults
+          Organizations:
+            - *orderer
+          Capabilities:
+            <<: *OrdererCapabilities
+        Application:
+          <<: *ApplicationDefaults
+          Organizations:
+            - <<: *orderer
+        Consortiums:
+          MAIN:
+            Organizations:
+              - *org1
+              - *org2
+
+      MainChannel:
+        <<: *ChannelDefaults
+        Consortium: MAIN
+        Application:
+          <<: *ApplicationDefaults
+          Organizations:
+            - *org1
+            - *org2
+          Capabilities:
+            <<: *ApplicationCapabilities

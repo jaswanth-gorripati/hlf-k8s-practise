@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderer2
+  labels: { component: orderer2, type: orderer, org: orderer }
+  namespace: orderer
+spec:
+  selector:
+    component: orderer2
+    type: orderer
+    org: orderer
+  type: ClusterIP
+  ports:
+    - port: 7050
+      targetPort: 7050

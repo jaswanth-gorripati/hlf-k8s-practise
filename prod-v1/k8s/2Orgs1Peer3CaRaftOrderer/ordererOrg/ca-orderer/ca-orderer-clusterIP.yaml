@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ca-orderer
+  labels: { component: ca, type: ca, org: orderer }
+  namespace: orderer
+spec:
+  selector:
+    component: ca
+    type: ca
+    org: orderer
+  type: ClusterIP
+  ports:
+    - port: 7054
+      targetPort: 7054
