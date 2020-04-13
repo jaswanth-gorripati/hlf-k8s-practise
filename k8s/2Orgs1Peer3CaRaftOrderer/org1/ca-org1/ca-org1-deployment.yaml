@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ca-org1-deployment
+  labels: { component: ca, type: ca, org: org1 }
+  namespace: org1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: ca
+      type: ca
+      org: org1
+  template:
+    metadata:
+      labels:
+        component: ca
+        type: ca
+        org: org1
+    spec:
+      volumes:
+        - name: org1-pvc-storage
+          persistentVolumeClaim:
+            claimName: org1-pvc-claim
+        - name: ca-start-script-volume
+          configMap:
+            name: ca-org1-start
+            defaultMode: 0744
+      containers:
+        - name: ca-org1
+          image: hyperledger/fabric-ca:1.4.3
+          resources:
+            limits:
+              cpu: "50m"
+              memory: 250Mi
+          volumeMounts:
+            - mountPath: /certs
+              name: org1-pvc-storage
+            - mountPath: /scripts
+              name: ca-start-script-volume
+          env:
+            - name: FABRIC_CA_HOME
+              value: /etc/hyperledger/fabric-ca-server
+            - name: FABRIC_CA_SERVER_HOME
+              value: /etc/hyperledger/fabric-ca-server
+            - name: FABRIC_CA_SERVER_CA_NAME
+              value: ca-org1
+            - name: FABRIC_CA_SERVER_TLS_ENABLED
+              value: "true"
+          command: ["sh"]
+          args: ["/scripts/start.sh"]
+          ports:
+            - containerPort: 7054

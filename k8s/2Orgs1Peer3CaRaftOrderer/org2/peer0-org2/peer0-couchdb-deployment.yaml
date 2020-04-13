@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: peer0-org2-couchdb-deployment
+  labels: { component: peer0, type: couchdb, org: org2 }
+  namespace: org2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: peer0
+      type: couchdb
+      org: org2
+  template:
+    metadata:
+      labels:
+        component: peer0
+        type: couchdb
+        org: org2
+    spec:
+      volumes:
+        - name: org2-pvc-storage
+          persistentVolumeClaim:
+            claimName: org2-pvc-claim
+      containers:
+        - name: peer0-org2-couchdb
+          image: hyperledger/fabric-couchdb:0.4.15
+          env:
+            - name: COUCHDB_USER
+              value: admin
+            - name: COUCHDB_PASSWORD
+              value: "1234"
+          resources:
+            limits:
+              cpu: "50m"
+              memory: 250Mi
+          volumeMounts:
+            - mountPath: /opt/couchdb/data
+              name: org2-pvc-storage
+              subPath: backup/couchdbs/org2/peer0-couchdb

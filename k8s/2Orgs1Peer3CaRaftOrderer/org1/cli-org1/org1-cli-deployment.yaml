@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cli-peer0-org1
+  labels: { component: cli, type: peercli, org: org1 }
+  namespace: org1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: cli
+      type: peercli
+      org: org1
+  template:
+    metadata:
+      labels:
+        component: cli
+        type: peercli
+        org: org1
+    spec:
+      volumes:
+        - name: org1-pvc-storage
+          persistentVolumeClaim:
+            claimName: org1-pvc-claim
+        - name: chaincode-config
+          configMap:
+            name: chaincode-config
+      containers:
+        - name: cli-peer0-org1
+          image: hyperledger/fabric-tools:1.4.3
+          resources:
+            limits:
+              cpu: "100m"
+              memory: 250Mi
+          workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+          command: ["sleep", "1000000"]
+          env:
+            - name: GOPATH
+              value: /opt/gopath
+            - name: CORE_PEER_ADDRESSAUTODETECT
+              value: "true"
+            - name: CORE_PEER_ID
+              value: peer0-org1
+            - name: CORE_PEER_ADDRESS
+              value: peer0-org1:7051
+            - name: CORE_PEER_LOCALMSPID
+              value: org1
+            - name: CORE_PEER_MSPCONFIGPATH
+              value: /etc/hyperledger/fabric/users/Admin@org1/msp
+            - name: CORE_PEER_TLS_ENABLED
+              value: "true"
+            - name: CORE_PEER_TLS_CERT_FILE
+              value: /etc/hyperledger/fabric/tls/server.crt
+            - name: CORE_PEER_TLS_KEY_FILE
+              value: /etc/hyperledger/fabric/tls/server.key
+            - name: CORE_PEER_TLS_ROOTCERT_FILE
+              value: /etc/hyperledger/fabric/tls/ca.crt
+          volumeMounts:
+            - mountPath: /etc/hyperledger/fabric/msp
+              name: org1-pvc-storage
+              subPath: peerOrgs/org1/peers/org1-peer0.org1.svc.cluster.local/msp
+            - mountPath: /etc/hyperledger/fabric/tls
+              name: org1-pvc-storage
+              subPath: peerOrgs/org1/peers/org1-peer0.org1.svc.cluster.local/tls
+            - mountPath: /var/hyperledger/production
+              name: org1-pvc-storage
+              subPath: backup/peers/peer0/production
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+              name: org1-pvc-storage
+              subPath: channel-artifacts
+            - mountPath: /etc/hyperledger/fabric/users
+              name: org1-pvc-storage
+              subPath: peerOrgs/org1/users
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/orderer/tls
+              name: org1-pvc-storage
+              subPath: ordererOrgs/orderer.svc.cluster.local/orderers/orderer0.orderer.svc.cluster.local/msp/tlscacerts/
+            - mountPath: /opt/gopath/src/github.com/chaincode
+              name: chaincode-config
